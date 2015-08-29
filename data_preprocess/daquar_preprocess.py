@@ -1,21 +1,18 @@
 """
-This
+preprocess daquar qa test & train raw text files
+single answer mode
 """
-
-dataset_path='./'
 
 import numpy
 import cPickle as pkl
 
-from collections import OrderedDict
-
-import glob
 import os
 
 from subprocess import Popen, PIPE
 
-# tokenizer.perl is from Moses: https://github.com/moses-smt/mosesdecoder/tree/master/scripts/tokenizer
-# tokenizer_cmd = ['./tokenizer.perl', '-l', 'en', '-q', '-']
+# tokenizer.perl is from
+# Moses: https://github.com/moses-smt/mosesdecoder/tree/master/scripts/tokenizer
+tokenizer_cmd = ['./tokenizer.perl', '-l', 'en', '-q', '-']
 
 
 def tokenize(sentences):
@@ -99,6 +96,7 @@ def grab_data(path, dictionary):
 
     return seqs
 
+
 def xy_split(xy):
     """splits into x and y since evans are ques and odds are single word answer
 
@@ -113,6 +111,7 @@ def xy_split(xy):
         y.append(xy[i+1])
     return x, y
 
+
 def prune_single_answer(y):
     """keeping only the first answer
 
@@ -125,33 +124,27 @@ def prune_single_answer(y):
         new_y[i] = y[i][0]
     return new_y
 
-def main():
-    # Get the dataset from http://ai.stanford.edu/~amaas/data/sentiment/
-    path = dataset_path
+
+def main(path):
     dictionary = build_dict(path)
 
     train_whole = grab_data(path+'qa.894.raw.train.txt', dictionary)
     train_x, train_y = xy_split(train_whole)
     train_y = prune_single_answer(train_y)
-    # train_x     = grab_data(path+'train/neg', dictionary)
-    # train_x = train_x_pos + train_x_neg
-    # train_y = [1] * len(train_x_pos) + [0] * len(train_x_neg)
 
     test_whole = grab_data(path+'qa.894.raw.test.txt', dictionary)
     test_x, test_y = xy_split(test_whole)
     test_y = prune_single_answer(test_y)
-    # test_x_neg = grab_data(path+'test/neg', dictionary)
-    # test_x = test_x_pos + test_x_neg
-    # test_y = [1] * len(test_x_pos) + [0] * len(test_x_neg)
 
-    f = open('daquar.pkl', 'wb')
+    f = open(path + 'text_data.pkl', 'wb')
     pkl.dump((train_x, train_y), f, -1)
     pkl.dump((test_x, test_y), f, -1)
     f.close()
 
-    f = open('daquar.dict.pkl', 'wb')
+    f = open(path + 'dict.pkl', 'wb')
     pkl.dump(dictionary, f, -1)
     f.close()
 
 if __name__ == '__main__':
-    main()
+    path = '../data/daquar_only_text/'
+    main(path)
