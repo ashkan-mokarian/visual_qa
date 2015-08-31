@@ -4,7 +4,7 @@ single answer mode
 """
 
 import numpy
-import cPickle as pkl
+import cPickle
 
 import os
 
@@ -112,39 +112,38 @@ def xy_split(xy):
     return x, y
 
 
-def prune_single_answer(y):
-    """keeping only the first answer
+def get_data(path='./data/daquar_only_text/', load=True):
+    if load is True:
+        if os.path.exists(path + 'text_data.pkl') and \
+                os.path.exists(path + 'dict.pkl'):
+            print 'Loading data from previously saved preprocessed daquar dataset ...'
+            with open(path + 'text_data.pkl') as f:
+                train_set = cPickle.load(f)
+                test_set = cPickle.load(f)
+            with open(path + 'dict.pkl') as f:
+                dictionary = cPickle.load(f)
+            return (train_set, test_set), dictionary
 
-    :y: TODO
-    :returns: TODO
-
-    """
-    new_y = [None] * len(y)
-    for i in range(len(y)):
-        new_y[i] = y[i][0]
-    return new_y
-
-
-def main(path):
+    print 'Preprocessing daquar raw text dataset ...'
     dictionary = build_dict(path)
 
     train_whole = grab_data(path+'qa.894.raw.train.txt', dictionary)
     train_x, train_y = xy_split(train_whole)
-    train_y = prune_single_answer(train_y)
 
     test_whole = grab_data(path+'qa.894.raw.test.txt', dictionary)
     test_x, test_y = xy_split(test_whole)
-    test_y = prune_single_answer(test_y)
 
     f = open(path + 'text_data.pkl', 'wb')
-    pkl.dump((train_x, train_y), f, -1)
-    pkl.dump((test_x, test_y), f, -1)
+    cPickle.dump((train_x, train_y), f, -1)
+    cPickle.dump((test_x, test_y), f, -1)
     f.close()
 
     f = open(path + 'dict.pkl', 'wb')
-    pkl.dump(dictionary, f, -1)
+    cPickle.dump(dictionary, f, -1)
     f.close()
+
+    return ((train_x, train_y), (test_x, test_y)), dictionary
 
 if __name__ == '__main__':
     path = '../data/daquar_only_text/'
-    main(path)
+    (train, test), dictionary = get_data(path)
