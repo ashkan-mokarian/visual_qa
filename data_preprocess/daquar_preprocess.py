@@ -1,6 +1,5 @@
 """
 preprocess daquar qa test & train raw text files
-single answer mode
 """
 
 import numpy
